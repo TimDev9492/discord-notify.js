@@ -1,8 +1,10 @@
 export const environment: Environment = {
     dev: {
-        message: "Hello, from dev!",
+        DISCORD_BOT_TOKEN: process.env.DISCORD_BOT_TOKEN,
+        PORT: 3000,
     },
     prod: {
-        message: "Hello, from prod!",
+        DISCORD_BOT_TOKEN: process.env.DISCORD_BOT_TOKEN,
+        PORT: 80,
     }
 }
