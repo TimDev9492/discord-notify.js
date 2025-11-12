@@ -1,4 +1,5 @@
 import { Client, Events, GatewayIntentBits, Partials, TextChannel } from 'discord.js';
+import { logger } from '.';
 
 export class DiscordBot {
   private client: Client;
@@ -16,7 +17,7 @@ export class DiscordBot {
     });
 
     this.client.once(Events.ClientReady, (readyEvent) => {
-      console.log(`Discord bot logged in as ${readyEvent.user.tag}`);
+      logger.info(`Discord bot logged in as ${readyEvent.user.tag}`);
       this.ready = true;
     });
 

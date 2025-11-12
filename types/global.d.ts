@@ -4,6 +4,7 @@ declare global {
   interface Config {
     DISCORD_BOT_TOKEN: string | undefined;
     PORT: number;
+    LOG_DIRECTORY: string;
   }
 
   interface Environment {
