@@ -112,10 +112,10 @@ app.post('/send', async (req: Request, res: Response) => {
     const request = req.body as MessageRequest;
 
     // Validate request
-    if (!request.type || !request.channelId || !request.payload) {
+    if (!request.type || !request.channelIds || !request.payload) {
       return res.status(400).json({
         success: false,
-        error: 'Missing required fields: type, channelId, and payload',
+        error: 'Missing required fields: type, channelIds, and payload',
       });
     }
 

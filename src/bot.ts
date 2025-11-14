@@ -1,4 +1,10 @@
-import { Client, Events, GatewayIntentBits, Partials, TextChannel } from 'discord.js';
+import {
+  Client,
+  Events,
+  GatewayIntentBits,
+  Partials,
+  TextChannel,
+} from 'discord.js';
 import { logger } from '.';
 
 export class DiscordBot {
@@ -37,35 +43,51 @@ export class DiscordBot {
     }
 
     try {
-      const channel = await this.client.channels.fetch(request.channelId);
-
-      if (!channel || !channel.isTextBased()) {
-        return {
-          success: false,
-          error: 'Channel not found or is not a text channel',
-        };
-      }
-
-      let sentMessage;
-      if (request.type === 'embed') {
-        sentMessage = await (channel as TextChannel).send({ embeds: [request.payload] });
-      } else if (request.type === 'message') {
-        sentMessage = await (channel as TextChannel).send(request.payload);
-      } else {
-        return {
+      let parsedPayload = null;
+      switch (request.type) {
+        case 'embed': {
+          parsedPayload = { embeds: [request.payload] };
+          break;
+        }
+        case 'message': {
+          parsedPayload = request.payload;
+          break;
+        }
+        default: {
+          return {
             success: false,
             error: `Unsupported type '${(request as any).type}'`,
-        };
+          };
+        }
+      }
+
+      // const channel = await this.client.channels.fetch(request.channelId);
+      const channelSuccess: {
+        [channelId: string]: boolean;
+      } = {};
+
+      const channeldIds = Array.isArray(request.channelIds) ? request.channelIds : [request.channelIds];
+
+      for (const channelId of channeldIds) {
+        channelSuccess[channelId] = true;
+        const channel = await this.client.channels.fetch(channelId);
+
+        if (!channel || !channel.isTextBased()) {
+          channelSuccess[channelId] = false;
+        }
+
+        await (channel as TextChannel).send(parsedPayload);
       }
 
       return {
-        success: true,
-        messageId: sentMessage.id,
+        success: Object.values(channelSuccess).includes(true),
+        channelReport: channelSuccess,
       };
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error occurred',
+        error:
+          error instanceof Error ? error.message : 'Unknown error occurred',
       };
     }
   }

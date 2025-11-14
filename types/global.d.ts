@@ -13,7 +13,7 @@ declare global {
   }
 
   interface BaseMessageRequest {
-    channelId: string;
+    channelIds: string[] | string;
     guildId?: string;
   }
 
@@ -31,7 +31,9 @@ declare global {
 
   interface MessageResponse {
     success: boolean;
-    messageId?: string;
+    channelReport?: {
+      [channelId: string]: boolean;
+    };
     error?: string;
   }
 }
