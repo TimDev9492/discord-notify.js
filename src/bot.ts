@@ -1,7 +1,12 @@
 import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
   Client,
   Events,
   GatewayIntentBits,
+  MessageCreateOptions,
+  MessagePayload,
   Partials,
   TextChannel,
 } from 'discord.js';
@@ -27,6 +32,21 @@ export class DiscordBot {
       this.ready = true;
     });
 
+    this.client.once(Events.InteractionCreate, async (interaction) => {
+      if (!interaction.isButton()) return;
+
+      if (interaction.customId === 'dismiss') {
+        try {
+          await interaction.message.delete();
+        } catch (error) {
+          await interaction.reply({
+            content: 'Failed to delete the message.',
+            flags: 'Ephemeral',
+          });
+        }
+      }
+    });
+
     this.client.login(token);
   }
 
@@ -43,10 +63,23 @@ export class DiscordBot {
     }
 
     try {
-      let parsedPayload = null;
+      let parsedPayload: string | MessagePayload | MessageCreateOptions | null =
+        null;
       switch (request.type) {
         case 'embed': {
-          parsedPayload = { embeds: [request.payload] };
+          parsedPayload = { embeds: [request.payload], components: [] };
+          if (request.dismissLabel) {
+            const button = new ButtonBuilder()
+              .setCustomId('dismiss')
+              .setLabel(request.dismissLabel)
+              .setStyle(ButtonStyle.Danger);
+
+            const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+              button,
+            );
+
+            parsedPayload.components = [row];
+          }
           break;
         }
         case 'message': {
@@ -66,7 +99,9 @@ export class DiscordBot {
         [channelId: string]: boolean;
       } = {};
 
-      const channeldIds = Array.isArray(request.channelIds) ? request.channelIds : [request.channelIds];
+      const channeldIds = Array.isArray(request.channelIds)
+        ? request.channelIds
+        : [request.channelIds];
 
       for (const channelId of channeldIds) {
         channelSuccess[channelId] = true;
@@ -76,7 +111,7 @@ export class DiscordBot {
           channelSuccess[channelId] = false;
         }
 
-        await (channel as TextChannel).send(parsedPayload);
+        const sentMessage = await (channel as TextChannel).send(parsedPayload);
       }
 
       return {

@@ -14,6 +14,7 @@ declare global {
 
   interface BaseMessageRequest {
     channelIds: string[] | string;
+    dismissLabel?: string;
     guildId?: string;
   }
 
